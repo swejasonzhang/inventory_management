@@ -135,7 +135,13 @@ export default function Home() {
 
                   <Stack direction="row"spacing={2}></Stack>
             
-                  <Button variant="contained" sx = {{ bgcolor: "#ffffff" }}
+                  <Button variant="contained" 
+                    sx={{
+                      backgroundColor: '#ffffff',
+                      '&:hover': {
+                        backgroundColor: '#ffffff', 
+                      },
+                    }}
                     onClick={() => {
                       removeItem(name)
                     }}
@@ -143,7 +149,13 @@ export default function Home() {
                   <Typography color="#1976d2" textTransform="none" fontFamily="cursive">Remove</Typography>
                   </Button>
 
-                  <Button variant="contained" sx = {{ bgcolor: "#ffffff" }}
+                  <Button variant="contained" 
+                    sx={{
+                      backgroundColor: '#ffffff',
+                      '&:hover': {
+                        backgroundColor: '#ffffff', 
+                      },
+                    }}
                     onClick={() => {
                       updateItem(name)
                     }}
