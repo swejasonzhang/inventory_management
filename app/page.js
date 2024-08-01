@@ -1,5 +1,4 @@
 'use client'
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { firestore } from '@/firebase'
 import { Box, Button, Modal, Stack, TextField, Typography } from '@mui/material'
@@ -9,6 +8,7 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('')
+
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, 'inventory'))
@@ -62,118 +62,100 @@ export default function Home() {
   const handleClose = () => setOpen(false)
 
   return (
-    <Box 
-      width="100vw" 
-      height="100vh" 
-      display="flex" 
-      flexDirection="column"
-      justifyContent="center" 
-      alignItems="center"
-      gap={2}
-    >
-      <Modal open={open} onClose={handleClose}>
-        <Box 
-          position="absolute"
-          top="50%"
-          left="50%"
-          width={400}
-          bgcolor="white"
-          border= "2px solid #000"
-          boxShadow={24}
-          p={4}
-          display="flex"
-          flexDirection="column"
-          gap={3}
-          sx={{
-            transform: 'translate(-50%, -50%)'
-          }}
-        >
-          <Typography variant="h6">Add Item</Typography>
-          <Stack width="100%" direction="row" spacing={2}>
-            <TextField 
-              variant="outlined"
-              fullWidth
-              value={itemName}
-              onChange={(e) => {
-                setItemName(e.target.value)
-              }}
-            />
-            <Button 
-              variant="outlined"
-              onClick={() => {
-                addItem(itemName)
-                setItemName('')
-                handleClose()
-              }}
-            >Add</Button>
-          </Stack>
-        </Box>
-      </Modal>
+    <>
+      <Box width="100vw" height="100vh" bgcolor="#1976d2" sx={{ overflowX: 'hidden'}}>
+        <Box width="100%" height="7rem" justifyContent="space-between" alignItems="center" display="flex" color="#FFFFFF">
+          <Typography fontSize="2rem" p="2rem" fontFamily="cursive">Dev Dishes 🍽️</Typography>
 
-      <Button 
-        variant="contained" 
-        onClick={() => {
-          handleOpen()
-        }}>
-        Add New Item
-      </Button>
-
-      <Box border="1px solid #333">
-        <Box
-          width="800px" 
-          height="100px"
-          bgcolor="#ADD8E6"
-          display="flex" 
-          alignItems="center" 
-          justifyContent="center"
-        >
-        <Typography variant="h2" color="#333">
-          Inventory Items
-        </Typography>
-      </Box>
-      <Stack width="800px" height="300px" spacing={2} overflow="auto">
-        {
-          inventory.map(({ name, quantity }) => (
-            <Box 
-              key={name} 
-              width="100%"
-              minHeight="150px"
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              bgcolor="#f0f0f0"
-              padding={5}
-            >
-              <Typography
-                variant="h3"
-                color="#333" 
-                textAlign="center"
-              >
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Typography>
-              <Typography
-                variant="h3"
-                color="#333" 
-                textAlign="center"
-              >
-                {quantity}
-              </Typography>
-              <Stack
-                direction="row"
-                spacing={2}
-              ></Stack>
-              <Button 
-                variant="contained"
-                onClick={() => {
-                  removeItem(name)
-                }}
-              >
-                Remove
-              </Button>
+          <Typography fontSize="2rem" p="2rem" fontFamily="cursive">Menu</Typography>
+        </Box> 
+      
+        <Box width="100%" height="100%" display="flex" flexDirection="column" justifyContent="center" alignItems="center" gap={2} bgcolor="#1976d2">
+          <Modal open={open} onClose={handleClose}>
+            <Box position="absolute" top="50%" left="50%" width={400} bgcolor="#ffffff" border= "2px solid #1976d2" boxShadow={24} p={4} display="flex" flexDirection="column" gap={3} sx={{ transform: 'translate(-50%, -50%)' }}>
+              <Typography variant="h6" fontFamily="cursive" color="#1976d2">Add Item</Typography>
+              <Stack width="100%" direction="row" spacing={2}>
+              <TextField variant="outlined" fullWidth value={itemName}
+                sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#1976d2',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#1976d2',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }}
+                  onChange={(e) => setItemName(e.target.value)}
+                />
+                <Button variant="outlined" sx = {{ borderColor: "#1976d2" }}
+                  onClick={() => {
+                    addItem(itemName)
+                    setItemName('')
+                    handleClose()
+                  }}>
+                <Typography color="#1976d2" textTransform="none">Add</Typography>
+                </Button>
+              </Stack>
             </Box>
-          ))}
-        </Stack>
-      </Box> 
-    </Box>
+          </Modal>
+
+          <Button variant="contained"
+              sx={{
+                backgroundColor: '#ffffff',
+                '&:hover': {
+                  backgroundColor: '#ffffff', 
+                },
+              }}
+              onClick={() => { handleOpen() }}
+            >
+            <Typography fontFamily="cursive" textTransform="none" color="#1976d2">
+              Add New Item
+            </Typography>
+          </Button>
+
+          <Box border="2px solid #ffffff">
+            <Box width="800px" height="100px" bgcolor="#1976d2" display="flex" alignItems="center" justifyContent="center" borderBottom="2px solid #ffffff">
+            <Typography variant="h2" color="#ffffff" fontFamily="cursive">Inventory Items</Typography>
+          </Box>
+          <Stack width="800px" height="300px" spacing={2} overflow="auto">
+            {
+              inventory.map(({ name, quantity }) => (
+                <Box key={name} width="100%" minHeight="150px" display="flex" alignItems="center" justifyContent="space-between" bgcolor="#1976d2" padding={5}>
+                  <Typography variant="h3" color="#ffffff" textAlign="center" fontFamily="cursive">
+                    {name.charAt(0).toUpperCase() + name.slice(1)}
+                  </Typography>
+
+                  <Typography variant="h3" color="#ffff" textAlign="center" fontFamily="cursive">
+                    {quantity}
+                  </Typography>
+
+                  <Stack direction="row"spacing={2}></Stack>
+            
+                  <Button variant="contained" sx = {{ bgcolor: "#ffffff" }}
+                    onClick={() => {
+                      removeItem(name)
+                    }}
+                  >
+                  <Typography color="#1976d2" textTransform="none" fontFamily="cursive">Remove</Typography>
+                  </Button>
+
+                  <Button variant="contained" sx = {{ bgcolor: "#ffffff" }}
+                    onClick={() => {
+                      updateItem(name)
+                    }}
+                  >
+                  <Typography color="#1976d2" textTransform="none" fontFamily="cursive">Update</Typography>
+                  </Button>
+                </Box>
+              ))}
+            </Stack>
+          </Box> 
+        </Box>
+      </Box>
+    </>
   )
 }
