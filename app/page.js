@@ -11,6 +11,8 @@ export default function Home() {
   const [itemName, setItemName] = useState('');
   const [itemToUpdate, setItemToUpdate] = useState('');
   const [quantityToUpdate, setQuantityToUpdate] = useState('');
+  const [addItemQuantity, setAddItemQuantity] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, 'inventory'));
@@ -25,15 +27,15 @@ export default function Home() {
     setInventory(inventoryList);
   };
 
-  const addItem = async(item) => {
+  const addItem = async(item, quantity) => {
     const docRef = doc(collection(firestore, 'inventory'), item);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      const { quantity } = docSnap.data();
-      await setDoc(docRef, { quantity: quantity + 1 });
+      const { quantity: currentQuantity } = docSnap.data();
+      await setDoc(docRef, { quantity: currentQuantity + parseInt(quantity, 10) });
     } else {
-      await setDoc(docRef, { quantity: 1 });
+      await setDoc(docRef, { quantity: parseInt(quantity, 10) });
     }
 
     await updateInventory();
@@ -68,16 +70,28 @@ export default function Home() {
   };
 
   const updateItem = async () => {
-    const docRef = doc(collection(firestore, 'inventory'), itemToUpdate);
-    const parsedQuantity = parseInt(quantityToUpdate, 10);
-    if (isNaN(parsedQuantity) || parsedQuantity < 0) {
-      alert("Please enter a valid quantity.");
-      return;
+    try {
+      const docRef = doc(collection(firestore, 'inventory'), itemToUpdate);
+      const parsedQuantity = parseInt(quantityToUpdate, 10);
+      
+      if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+        alert("Please enter a valid quantity.");
+        return;
+      }
+  
+      if (parsedQuantity === 0) {
+        await deleteDoc(docRef);
+      } else {
+        await setDoc(docRef, { quantity: parsedQuantity });
+      }
+      
+      setOpenUpdate(false);
+      setQuantityToUpdate('');
+      await updateInventory();
+      
+    } catch (error) {
+      console.error('Error updating item:', error);
     }
-    await setDoc(docRef, { quantity: parsedQuantity });
-    setOpenUpdate(false);
-    setQuantityToUpdate('');
-    await updateInventory();
   };
 
   useEffect(() => {
@@ -85,8 +99,16 @@ export default function Home() {
   }, []);
 
   const handleOpenAdd = () => setOpenAdd(true);
-  const handleCloseAdd = () => setOpenAdd(false);
+  const handleCloseAdd = () => {
+    setOpenAdd(false);
+    setItemName('');
+    setAddItemQuantity('');
+  };
   const handleCloseUpdate = () => setOpenUpdate(false);
+
+  const filteredInventory = inventory.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
@@ -144,7 +166,6 @@ export default function Home() {
           alignItems="center"
           gap={2}
         >
-          {/* Add Item Modal */}
           <Modal open={openAdd} onClose={handleCloseAdd}>
             <Box
               position="absolute"
@@ -167,6 +188,7 @@ export default function Home() {
                   variant="outlined"
                   fullWidth
                   value={itemName}
+                  placeholder="Item Name"
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
@@ -182,13 +204,37 @@ export default function Home() {
                   }}
                   onChange={(e) => setItemName(e.target.value)}
                 />
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  value={addItemQuantity}
+                  type="number"
+                  placeholder="Quantity"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#000',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#000',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#000',
+                      },
+                    },
+                  }}
+                  onChange={(e) => setAddItemQuantity(e.target.value)}
+                />
                 <Button
                   variant="outlined"
                   sx={{ borderColor: "#000" }}
                   onClick={() => {
-                    addItem(itemName);
-                    setItemName('');
-                    handleCloseAdd();
+                    if (itemName && addItemQuantity) {
+                      addItem(itemName, addItemQuantity);
+                      handleCloseAdd();
+                    } else {
+                      alert("Please enter both item name and quantity.");
+                    }
                   }}
                 >
                   <Typography color="#000" textTransform="none">Add</Typography>
@@ -197,7 +243,6 @@ export default function Home() {
             </Box>
           </Modal>
 
-          {/* Update Item Modal */}
           <Modal open={openUpdate} onClose={handleCloseUpdate}>
             <Box
               position="absolute"
@@ -239,9 +284,7 @@ export default function Home() {
                 <Button
                   variant="outlined"
                   sx={{ borderColor: "#000" }}
-                  onClick={() => {
-                    updateItem();
-                  }}
+                  onClick={updateItem}
                 >
                   <Typography color="#000" textTransform="none">Update</Typography>
                 </Button>
@@ -251,20 +294,50 @@ export default function Home() {
 
           <Typography fontSize="5rem" fontFamily="cursive" color="#ffffff">Let's Learn How To Cook!</Typography>
 
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: '#ffffff',
-              '&:hover': {
-                backgroundColor: '#ffffff', 
-              },
-            }}
-            onClick={handleOpenAdd}
-          >
-            <Typography fontFamily="cursive" textTransform="none" color="#000">
-              Add New Item
-            </Typography>
-          </Button>
+          <Box width="80rem" display="flex" flexDirection="row" alignItems="center" justifyContent='space-evenly' padding="2rem">
+            <TextField
+              id="outlined-basic"
+              label="Search For Ingredients"
+              variant="filled"
+              placeholder="Let's Cook!"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                width: '300px', 
+                '& .MuiInputBase-root': { 
+                  backgroundColor: '#fff', 
+                  fontFamily: 'cursive',
+                  width: '30rem',
+                  '&:hover': {
+                    backgroundColor: '#fff', 
+                  },
+                },
+                '& .MuiOutlinedInput-root': { 
+                  '& fieldset': {
+                    borderColor: 'transparent', 
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'transparent', 
+                  },
+                },
+              }}
+            />
+
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: '#ffffff',
+                '&:hover': {
+                  backgroundColor: '#ffffff', 
+                },
+              }}
+              onClick={handleOpenAdd}
+            >
+              <Typography fontFamily="cursive" textTransform="none" color="#000">
+                Add New Item
+              </Typography>
+            </Button>
+          </Box>
 
           <Box>
             <Stack
@@ -282,7 +355,7 @@ export default function Home() {
                 msOverflowStyle: 'none',
               }}
             >
-              {inventory.map(({ name, quantity }) => (
+              {filteredInventory.map(({ name, quantity }) => (
                 <Box
                   key={name}
                   width="100%"
