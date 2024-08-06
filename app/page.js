@@ -192,13 +192,13 @@ export default function Home() {
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
-                        borderColor: '#000',
+                        borderColor: "#000",
                       },
                       '&:hover fieldset': {
-                        borderColor: '#000',
+                        borderColor: "#000",
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: '#000',
+                        borderColor: "#000",
                       },
                     },
                   }}
@@ -294,7 +294,7 @@ export default function Home() {
 
           <Typography fontSize="5rem" fontFamily="cursive" color="#ffffff">Let's Learn How To Cook!</Typography>
 
-          <Box width="80rem" display="flex" flexDirection="row" alignItems="center" justifyContent='space-evenly' padding="2rem">
+          <Box width="80rem" display="flex" flexDirection="row" alignItems="center" justifyContent="space-evenly" padding="2rem">
             <TextField
               id="outlined-basic"
               label="Search For Ingredients"
