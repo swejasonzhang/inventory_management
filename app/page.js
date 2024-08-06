@@ -6,8 +6,11 @@ import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc } from "fire
 
 export default function Home() {
   const [inventory, setInventory] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
   const [itemName, setItemName] = useState('');
+  const [itemToUpdate, setItemToUpdate] = useState('');
+  const [quantityToUpdate, setQuantityToUpdate] = useState('');
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, 'inventory'));
@@ -39,16 +42,41 @@ export default function Home() {
   const removeItem = async (item) => {
     const docRef = doc(collection(firestore, 'inventory'), item);
     const docSnap = await getDoc(docRef);
+  
+    if (docSnap.exists()) {
+      const { quantity } = docSnap.data();
+      if (quantity > 1) {
+        await setDoc(docRef, { quantity: quantity - 1 });
+      } else {
+        await deleteDoc(docRef);
+      }
+    }
+  
+    await updateInventory();
+  };  
+
+  const openUpdateModal = async (item) => {
+    const docRef = doc(collection(firestore, 'inventory'), item);
+    const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
-      if (quantity === 1){
-        await deleteDoc(docRef);
-      } else {
-        await setDoc(docRef, { quantity: quantity - 1 });
-      }
+      setItemToUpdate(item);
+      setQuantityToUpdate(quantity);
+      setOpenUpdate(true);
     }
+  };
 
+  const updateItem = async () => {
+    const docRef = doc(collection(firestore, 'inventory'), itemToUpdate);
+    const parsedQuantity = parseInt(quantityToUpdate, 10);
+    if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+      alert("Please enter a valid quantity.");
+      return;
+    }
+    await setDoc(docRef, { quantity: parsedQuantity });
+    setOpenUpdate(false);
+    setQuantityToUpdate('');
     await updateInventory();
   };
 
@@ -56,84 +84,228 @@ export default function Home() {
     updateInventory();
   }, []);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleOpenAdd = () => setOpenAdd(true);
+  const handleCloseAdd = () => setOpenAdd(false);
+  const handleCloseUpdate = () => setOpenUpdate(false);
 
   return (
     <>
-      <Box width="100vw" height="100vh" bgcolor="#1976d2" sx={{ overflowX: 'hidden'}}>
-        <Box width="100%" height="5rem" justifyContent="space-between" alignItems="center" display="flex" color="#FFFFFF">
-          <Typography height="5rem" fontSize="2rem" paddingLeft="2rem" fontFamily="cursive" display= 'flex' alignItems='center' justifyContent='center' >Dev Dishes 🍽️</Typography>
+      <Box
+        width="100vw"
+        height="100vh"
+        sx={{
+          backgroundImage: 'url(/Background.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          overflow: 'hidden',
+          zIndex: 1,
+          position: 'absolute',
+        }}
+      >
+        <Box
+          width="100%"
+          height="5rem"
+          justifyContent="space-between"
+          alignItems="center"
+          display="flex"
+          color="#FFFFFF"
+          sx={{ zIndex: 1000, position: 'relative' }} 
+        >
+          <Typography
+            height="5rem"
+            fontSize="2.5rem"
+            paddingLeft="2rem"
+            fontFamily="cursive"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            Dev Dishes 🍽️
+          </Typography>
 
-          <Typography height="5rem" fontSize="2rem" paddingRight="2rem" fontFamily="cursive" display= 'flex' alignItems='center' justifyContent='center'>Menu</Typography>
+          <Typography
+            height="5rem"
+            fontSize="2rem"
+            paddingRight="2rem"
+            fontFamily="cursive"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          ></Typography>
         </Box> 
-      
-        <Box width="100%" height="100%" display="flex" flexDirection="column" justifyContent="center" alignItems="center" gap={2} bgcolor="#ffffff">
-          <Modal open={open} onClose={handleClose}>
-            <Box position="absolute" top="50%" left="50%" width={400} bgcolor="#ffffff" border= "2px solid #1976d2" boxShadow={24} p={4} display="flex" flexDirection="column" gap={3} sx={{ transform: 'translate(-50%, -50%)' }}>
-              <Typography variant="h6" fontFamily="cursive" color="#1976d2">Add Item</Typography>
+
+        <Box
+          width="100%"
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-evenly"
+          alignItems="center"
+          gap={2}
+        >
+          {/* Add Item Modal */}
+          <Modal open={openAdd} onClose={handleCloseAdd}>
+            <Box
+              position="absolute"
+              top="50%"
+              left="50%"
+              width={400}
+              bgcolor="#ffffff"
+              boxShadow={24}
+              p={4}
+              display="flex"
+              flexDirection="column"
+              gap={3}
+              sx={{ transform: 'translate(-50%, -50%)', zIndex: 2000 }}
+            >
+              <Typography variant="h6" fontFamily="cursive" color="#000">
+                Add Item
+              </Typography>
               <Stack width="100%" direction="row" spacing={2}>
-              <TextField variant="outlined" fullWidth value={itemName}
-                sx={{
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  value={itemName}
+                  sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
-                        borderColor: '#1976d2',
+                        borderColor: '#000',
                       },
                       '&:hover fieldset': {
-                        borderColor: '#1976d2',
+                        borderColor: '#000',
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: '#1976d2',
-                      }
-                    }
+                        borderColor: '#000',
+                      },
+                    },
                   }}
                   onChange={(e) => setItemName(e.target.value)}
                 />
-                <Button variant="outlined" sx = {{ borderColor: "#1976d2" }}
+                <Button
+                  variant="outlined"
+                  sx={{ borderColor: "#000" }}
                   onClick={() => {
-                    addItem(itemName)
-                    setItemName('')
-                    handleClose()
-                  }}>
-                <Typography color="#1976d2" textTransform="none">Add</Typography>
+                    addItem(itemName);
+                    setItemName('');
+                    handleCloseAdd();
+                  }}
+                >
+                  <Typography color="#000" textTransform="none">Add</Typography>
                 </Button>
               </Stack>
             </Box>
           </Modal>
 
-          <Button variant="contained"
-              sx={{
-                backgroundColor: '#ffffff',
-                '&:hover': {
-                  backgroundColor: '#ffffff', 
-                },
-              }}
-              onClick={() => { handleOpen() }}
+          {/* Update Item Modal */}
+          <Modal open={openUpdate} onClose={handleCloseUpdate}>
+            <Box
+              position="absolute"
+              top="50%"
+              left="50%"
+              width={400}
+              bgcolor="#ffffff"
+              boxShadow={24}
+              p={4}
+              display="flex"
+              flexDirection="column"
+              gap={3}
+              sx={{ transform: 'translate(-50%, -50%)', zIndex: 2000 }}
             >
-            <Typography fontFamily="cursive" textTransform="none" color="#1976d2">
+              <Typography variant="h6" fontFamily="cursive" color="#000">
+                Update Item Quantity
+              </Typography>
+              <Stack width="100%" direction="row" spacing={2}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  value={quantityToUpdate}
+                  type="number"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#000',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#000',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#000',
+                      },
+                    },
+                  }}
+                  onChange={(e) => setQuantityToUpdate(e.target.value)}
+                />
+                <Button
+                  variant="outlined"
+                  sx={{ borderColor: "#000" }}
+                  onClick={() => {
+                    updateItem();
+                  }}
+                >
+                  <Typography color="#000" textTransform="none">Update</Typography>
+                </Button>
+              </Stack>
+            </Box>
+          </Modal>
+
+          <Typography fontSize="5rem" fontFamily="cursive" color="#ffffff">Let's Learn How To Cook!</Typography>
+
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: '#ffffff',
+              '&:hover': {
+                backgroundColor: '#ffffff', 
+              },
+            }}
+            onClick={handleOpenAdd}
+          >
+            <Typography fontFamily="cursive" textTransform="none" color="#000">
               Add New Item
             </Typography>
           </Button>
 
-          <Box border="2px solid #ffffff">
-            <Box width="800px" height="100px" bgcolor="#1976d2" display="flex" alignItems="center" justifyContent="center" borderBottom="2px solid #ffffff">
-            <Typography variant="h2" color="#ffffff" fontFamily="cursive">Inventory Items</Typography>
-          </Box>
-          <Stack width="800px" height="300px" spacing={2} overflow="auto">
-            {
-              inventory.map(({ name, quantity }) => (
-                <Box key={name} width="100%" minHeight="150px" display="flex" alignItems="center" justifyContent="space-between" bgcolor="#1976d2" padding={5}>
+          <Box>
+            <Stack
+              width="800px"
+              height="300px"
+              spacing={2}
+              overflow="auto"
+              border="2px solid #fff"
+              borderRadius="10px"
+              sx={{
+                '&::-webkit-scrollbar': {
+                  display: 'none',
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {inventory.map(({ name, quantity }) => (
+                <Box
+                  key={name}
+                  width="100%"
+                  minHeight="150px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  bgcolor="transparent"
+                  padding={5}
+                  sx={{ zIndex: 1000, position: 'relative' }} 
+                >
                   <Typography variant="h3" color="#ffffff" textAlign="center" fontFamily="cursive">
                     {name.charAt(0).toUpperCase() + name.slice(1)}
                   </Typography>
 
-                  <Typography variant="h3" color="#ffff" textAlign="center" fontFamily="cursive">
-                    {quantity}
+                  <Typography variant="h3" color="#ffffff" textAlign="center" fontFamily="cursive">
+                    Qty: {quantity}
                   </Typography>
 
-                  <Stack direction="row"spacing={2}></Stack>
-            
-                  <Button variant="contained" 
+                  <Stack direction="row" spacing={2}></Stack>
+
+                  <Button
+                    variant="contained"
                     sx={{
                       backgroundColor: '#ffffff',
                       '&:hover': {
@@ -141,13 +313,14 @@ export default function Home() {
                       },
                     }}
                     onClick={() => {
-                      removeItem(name)
+                      removeItem(name);
                     }}
                   >
-                  <Typography color="#1976d2" textTransform="none" fontFamily="cursive">Remove</Typography>
+                    <Typography color="#000" textTransform="none" fontFamily="cursive">Remove</Typography>
                   </Button>
 
-                  <Button variant="contained" 
+                  <Button
+                    variant="contained"
                     sx={{
                       backgroundColor: '#ffffff',
                       '&:hover': {
@@ -155,10 +328,10 @@ export default function Home() {
                       },
                     }}
                     onClick={() => {
-                      updateItem(name)
+                      openUpdateModal(name);
                     }}
                   >
-                  <Typography color="#1976d2" textTransform="none" fontFamily="cursive">Update</Typography>
+                    <Typography color="#000" textTransform="none" fontFamily="cursive">Update</Typography>
                   </Button>
                 </Box>
               ))}
