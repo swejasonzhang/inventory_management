@@ -292,7 +292,7 @@ export default function Home() {
             </Box>
           </Modal>
 
-          <Typography fontSize="5rem" fontFamily="cursive" color="#ffffff">Let's Learn How To Cook!</Typography>
+          <Typography fontSize="5rem" fontFamily="cursive" color="#ffffff">Lets Learn How To Cook!</Typography>
 
           <Box width="80rem" display="flex" flexDirection="row" alignItems="center" justifyContent="space-evenly" padding="2rem">
             <TextField
