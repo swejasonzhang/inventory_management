@@ -59,17 +59,13 @@ export default function Home() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const redirectHome = () => {
-    window.location.href = '/';
-  };
-
   return (
     <>
       <Box width="100vw" height="100vh" bgcolor="#1976d2" sx={{ overflowX: 'hidden'}}>
         <Box width="100%" height="5rem" justifyContent="space-between" alignItems="center" display="flex" color="#FFFFFF">
-          <Typography height="5rem" fontSize="2rem" paddingLeft="2rem" fontFamily="cursive" sx={{ cursor: 'pointer'}} display= 'flex' alignItems='center' justifyContent='center' onClick={redirectHome}>Dev Dishes 🍽️</Typography>
+          <Typography height="5rem" fontSize="2rem" paddingLeft="2rem" fontFamily="cursive" display= 'flex' alignItems='center' justifyContent='center' >Dev Dishes 🍽️</Typography>
 
-          <Typography height="5rem" fontSize="2rem" paddingRight="2rem" fontFamily="cursive" sx={{ cursor: 'pointer'}} display= 'flex' alignItems='center' justifyContent='center'>Menu</Typography>
+          <Typography height="5rem" fontSize="2rem" paddingRight="2rem" fontFamily="cursive" display= 'flex' alignItems='center' justifyContent='center'>Menu</Typography>
         </Box> 
       
         <Box width="100%" height="100%" display="flex" flexDirection="column" justifyContent="center" alignItems="center" gap={2} bgcolor="#ffffff">
